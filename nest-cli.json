@@ -1,0 +1,39 @@
+{
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "apps/queuejs/src",
+  "monorepo": true,
+  "root": "apps/queuejs",
+  "compilerOptions": {
+    "webpack": true,
+    "tsConfigPath": "apps/queuejs/tsconfig.app.json"
+  },
+  "projects": {
+    "queuejs": {
+      "type": "application",
+      "root": "apps/queuejs",
+      "entryFile": "main",
+      "sourceRoot": "apps/queuejs/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/queuejs/tsconfig.app.json"
+      }
+    },
+    "consumer": {
+      "type": "application",
+      "root": "apps/consumer",
+      "entryFile": "main",
+      "sourceRoot": "apps/consumer/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/consumer/tsconfig.app.json"
+      }
+    },
+    "producer": {
+      "type": "application",
+      "root": "apps/producer",
+      "entryFile": "main",
+      "sourceRoot": "apps/producer/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/producer/tsconfig.app.json"
+      }
+    }
+  }
+}
