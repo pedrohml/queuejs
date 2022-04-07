@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import DB from '@prisma/client';
+import db from '@prisma/client';
 import { PrismaService } from '../prisma.service';
-import { Message, MessageCollection } from './models/message';
+import { Message } from '../wire/message';
 
 @Injectable()
-export class TopicsService {
+export class ProducerService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  private async getLastMessage(topic: string): Promise<DB.Message> {
+  private async getLastMessage(topic: string): Promise<db.Message> {
     return this.prismaService.message.findFirst({ where: { topic }, orderBy: { offset: 'desc' } })
   }
 
@@ -15,7 +15,7 @@ export class TopicsService {
     let lastMessage = await this.getLastMessage(topic);
     let lastOffset = (lastMessage && lastMessage.offset) || 0;
     let nextOffset = lastOffset + 1;
-    let messagesDB: DB.Message[] = messages.map(({ data }, idx) => { return { id: undefined, topic, data, offset: nextOffset + idx } });
-    await Promise.all(messagesDB.map(async (mDB) => await this.prismaService.message.create({ data: mDB })));
+    let messagesDB: db.Message[] = messages.map(({ data }, idx) => { return { id: undefined, topic, data, offset: nextOffset + idx } });
+    await this.prismaService.$transaction(messagesDB.map((m) => this.prismaService.message.create({ data: m })));
   }
 }

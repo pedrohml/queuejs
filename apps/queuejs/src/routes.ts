@@ -1,6 +1,6 @@
 import { Routes } from "@nestjs/core"
-import { GroupsModule } from "./groups/groups.module";
-import { TopicsModule } from "./topics/topics.module";
+import { ConsumerModule } from "./modules/consumer.module";
+import { ProducerModule } from "./modules/producer.module";
 
 let routes: Routes = [
     {
@@ -8,11 +8,11 @@ let routes: Routes = [
         children: [
             {
                 path: 'topics',
-                module: TopicsModule
+                module: ProducerModule
             },
             {
                 path: 'groups',
-                module: GroupsModule
+                module: ConsumerModule
             }
         ]
     }

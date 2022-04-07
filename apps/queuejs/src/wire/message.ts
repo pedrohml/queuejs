@@ -1,9 +1,13 @@
 import { Type } from "class-transformer";
-import { ArrayNotEmpty, IsArray, IsString, ValidateNested } from "class-validator";
+import { ArrayNotEmpty, IsArray, IsNumber, IsPositive, IsString, ValidateNested } from "class-validator";
 
 export class Message {
     @IsString()
     data: string;
+
+    topic?: String;
+    
+    offset?: number;
 }
 
 export class MessageCollection {
@@ -21,3 +25,5 @@ export class MessageCollection {
         return this.messages.length === 0;
     }
 }
+
+export default { Message, MessageCollection }

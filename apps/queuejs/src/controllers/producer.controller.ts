@@ -1,7 +1,7 @@
 import { Controller, Post, Body, Param } from '@nestjs/common';
 import { IsNotEmpty } from 'class-validator';
-import { TopicsService } from './topics.service';
-import { MessageCollection } from './models/message';
+import { ProducerService } from '../services/producer.service';
+import { MessageCollection } from '../wire/message';
 
 class PathParams {
   @IsNotEmpty()
@@ -9,11 +9,11 @@ class PathParams {
 }
 
 @Controller(':topic')
-export class TopicsController {
-  constructor(private readonly topicsService: TopicsService) {}
+export class ProducerController {
+  constructor(private readonly producerService: ProducerService) {}
 
   @Post('messages')
   async produce(@Param() params: PathParams, @Body() messageCollection: MessageCollection) {
-    this.topicsService.produce(params.topic, messageCollection.messages);
+    this.producerService.produce(params.topic, messageCollection.messages);
   }
 }
