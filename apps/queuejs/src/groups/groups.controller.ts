@@ -1,37 +1,45 @@
-import { Body, Controller, Inject, Param, Post, Put } from '@nestjs/common';
+import DB from '@prisma/client';
+import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
 import { Type } from 'class-transformer';
-import { IsNotEmpty } from 'class-validator';
-import { IGroupsService } from './groups.service';
+import { IsAlphanumeric, IsNotEmpty } from 'class-validator';
+import { GroupsService } from './groups.service';
 
 class PathParams {
   @IsNotEmpty()
+  @IsAlphanumeric()
   group: string;
-}
 
-class RegisterPayload {
   @IsNotEmpty()
+  @IsAlphanumeric()
   topic: string;
 }
 
 class CommitPayload {
-  @IsNotEmpty()
-  topic: string;
-  
   @Type(() => Number)
   offset: number;
 }
 
 @Controller(':group')
 export class GroupsController {
-  constructor(@Inject(IGroupsService) private readonly groupsService: IGroupsService) {}
+  constructor(private readonly groupsService: GroupsService) {}
 
-  @Post('register')
-  register(@Param() { group }: PathParams, @Body() { topic }: RegisterPayload) {
+  @Post('topics/:topic/register')
+  async register(@Param() { group, topic }: PathParams): Promise<DB.ConsumerGroup> {
     return this.groupsService.register(group, topic);
   }
 
-  @Put('commit')
-  commit(@Param() { group }: PathParams, @Body() { topic, offset }: CommitPayload) {
+  @Put('topics/:topic/commit')
+  async commit(@Param() { group, topic }: PathParams, @Body() { offset }: CommitPayload): Promise<DB.ConsumerGroup> {
     return this.groupsService.commit(group, topic, offset);
+  }
+
+  @Get('topics/:topic/messages/:count')
+  async messages(@Param() { group, topic }: PathParams): Promise<DB.Message[]> {
+    return this.groupsService.getMessages(group, topic);
+  }
+
+  @Get('topics/:topic/next')
+  async next(@Param() { group, topic }: PathParams): Promise<DB.Message[]> {
+    return this.groupsService.getMessages(group, topic, 1);
   }
 }

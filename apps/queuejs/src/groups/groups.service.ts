@@ -1,50 +1,37 @@
-import { FactoryProvider, Injectable } from '@nestjs/common';
-import { GroupMap, TopicSettings, TopicSettingsMap } from './models/groups'
-
-export interface IGroupsService {
-    register(group: string, topic: string): TopicSettings;
-    commit(group: string, topic: string, offset: number): TopicSettings;
-}
-
-export const IGroupsService = Symbol('IGroupsService');
+import DB from '@prisma/client';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma.service';
 
 @Injectable()
-class GroupsServiceMock implements IGroupsService {
-    groups: GroupMap;
+export class GroupsService {
+    constructor(private readonly prismaService: PrismaService) {}
 
-    constructor() {
-        this.groups = new Map();
+    private async getGroupByTuple(group: string, topic: string): Promise<DB.ConsumerGroup> {
+        let groupDB: DB.ConsumerGroup = await this.prismaService.consumerGroup.findFirst({ where: { name: group, topic: topic } });
+        return groupDB;
     }
 
-    private getSettings(group: string, topic: string): TopicSettings {
-        let topicSettingsMap: TopicSettingsMap = this.groups[group] || new Map();
-        let settings: TopicSettings = topicSettingsMap[topic] || new TopicSettings(0);
-        return settings;
+    private async setGroupOffset(group: string, topic: string, offset: number): Promise<DB.ConsumerGroup> {
+        let existingGroupDB = await this.getGroupByTuple(group, topic);
+        if (existingGroupDB)
+            return this.prismaService.consumerGroup.update({ where: { id: existingGroupDB.id }, data: { offset }})
+        else
+            return this.prismaService.consumerGroup.create({ data: { name: group, topic, offset}});
     }
 
-    private setSettings(group: string, topic: string, settings: TopicSettings): void {
-        let topicSettingsMap: TopicSettingsMap = this.groups[group] || new Map();
-        topicSettingsMap[topic] = settings;
+    async register(group: string, topic: string): Promise<DB.ConsumerGroup> {
+        return (await this.getGroupByTuple(group, topic)) || (await this.setGroupOffset(group, topic, 0));
     }
 
-    register(group: string, topic: string): TopicSettings {
-        let topicSettingsMap: TopicSettingsMap = this.groups[group] || new Map();
-        let settings: TopicSettings = this.getSettings(group, topic);
-        topicSettingsMap[topic] ||= settings;
-        this.groups[group] = topicSettingsMap;
-        return settings;
+    async commit(group: string, topic: string, offset: number): Promise<DB.ConsumerGroup> {
+        return this.setGroupOffset(group, topic, offset);
     }
 
-    commit(group: string, topic: string, offset: number): TopicSettings {
-        this.setSettings(group, topic, { offset });
-        return this.getSettings(group, topic);
-    }
-}
-
-export class GroupsServiceProvider implements FactoryProvider<IGroupsService> {
-    provide = IGroupsService;
-
-    useFactory(...args: any[]): IGroupsService {
-        return new GroupsServiceMock();
+    async getMessages(group: string, topic: string, count: number = 256): Promise<DB.Message[]> {
+        let groupDB: DB.ConsumerGroup = await this.getGroupByTuple(group, topic);
+        if (!groupDB)
+            throw new HttpException(`There is no a consumer group '${group}' registered for the topic '${topic}'`, HttpStatus.BAD_REQUEST);
+        let offset = groupDB.offset;
+        return this.prismaService.message.findMany({ take: count, where: { offset: { gt: offset } }, orderBy: { offset: 'asc' }});
     }
 }

@@ -1,0 +1,30 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// datasource db {
+//   provider = "postgresql"
+//   url      = env("DATABASE_URL")
+// }
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Message {
+  id Int @id @default(autoincrement())
+  topic String
+  data String
+  offset Int
+}
+
+model ConsumerGroup {
+  id Int @id @default(autoincrement())
+  name String
+  topic String
+  offset Int
+}

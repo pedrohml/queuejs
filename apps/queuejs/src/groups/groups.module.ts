@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
-import { GroupsServiceProvider } from './groups.service';
+import { GroupsService } from './groups.service';
 import { GroupsController } from './groups.controller';
+import { PrismaService } from '../prisma.service';
 
 @Module({
   controllers: [GroupsController],
-  providers: [new GroupsServiceProvider()]
+  providers: [PrismaService, GroupsService]
 })
 export class GroupsModule {}
