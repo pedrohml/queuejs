@@ -1,29 +1,34 @@
-import { Type } from "class-transformer";
-import { ArrayNotEmpty, IsArray, IsNumber, IsPositive, IsString, ValidateNested } from "class-validator";
+import { Type } from 'class-transformer';
+import {
+  ArrayNotEmpty,
+  IsArray,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 
 export class Message {
-    @IsString()
-    data: string;
+  @IsString()
+  data: string;
 
-    topic?: String;
-    
-    offset?: number;
+  topic?: string;
+
+  offset?: number;
 }
 
 export class MessageCollection {
-    @IsArray()
-    @ArrayNotEmpty()
-    @ValidateNested({ each: true })
-    @Type(() => Message)
-    messages: Message[];
-    
-    constructor(messages: Message[] = null) {
-        this.messages = messages || [];
-    }
+  @IsArray()
+  @ArrayNotEmpty()
+  @ValidateNested({ each: true })
+  @Type(() => Message)
+  messages: Message[];
 
-    isEmpty(): boolean {
-        return this.messages.length === 0;
-    }
+  constructor(messages: Message[] = null) {
+    this.messages = messages || [];
+  }
+
+  isEmpty(): boolean {
+    return this.messages.length === 0;
+  }
 }
 
-export default { Message, MessageCollection }
+export default { Message, MessageCollection };

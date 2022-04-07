@@ -13,7 +13,10 @@ export class ProducerController {
   constructor(private readonly producerService: ProducerService) {}
 
   @Post('messages')
-  async produce(@Param() params: PathParams, @Body() messageCollection: MessageCollection) {
+  async produce(
+    @Param() params: PathParams,
+    @Body() messageCollection: MessageCollection,
+  ) {
     this.producerService.produce(params.topic, messageCollection.messages);
   }
 }

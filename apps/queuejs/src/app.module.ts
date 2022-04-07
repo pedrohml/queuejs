@@ -5,9 +5,6 @@ import { ConsumerModule } from './modules/consumer.module';
 import routes from './routes';
 
 @Module({
-  imports: [
-    ProducerModule,
-    ConsumerModule,
-    RouterModule.register(routes)]
+  imports: [ProducerModule, ConsumerModule, RouterModule.register(routes)],
 })
 export class AppModule {}
