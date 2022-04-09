@@ -16,24 +16,6 @@
       "compilerOptions": {
         "tsConfigPath": "apps/queuejs/tsconfig.app.json"
       }
-    },
-    "consumer": {
-      "type": "application",
-      "root": "apps/consumer",
-      "entryFile": "main",
-      "sourceRoot": "apps/consumer/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/consumer/tsconfig.app.json"
-      }
-    },
-    "producer": {
-      "type": "application",
-      "root": "apps/producer",
-      "entryFile": "main",
-      "sourceRoot": "apps/producer/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/producer/tsconfig.app.json"
-      }
     }
   }
 }
