@@ -183,7 +183,7 @@ describe('producer + consumer (e2e)', () => {
             .expect({ group, topic, offset: 0 });
     });
     
-    it('register none if already commit', async () => {
+    it('register none if already commited', async () => {
         let topic = 'topic1';
         let group = 'group1';
 

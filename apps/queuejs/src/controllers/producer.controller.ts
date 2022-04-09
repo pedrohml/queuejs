@@ -1,7 +1,7 @@
 import { Controller, Post, Body, Param, HttpStatus, HttpCode } from '@nestjs/common';
 import { IsNotEmpty } from 'class-validator';
 import { ProducerService } from '../services/producer.service';
-import { Message, MessageCollection } from '../wire/message.wire';
+import { MessageCollection } from '../wire/message.wire';
 
 class PathParams {
   @IsNotEmpty()
