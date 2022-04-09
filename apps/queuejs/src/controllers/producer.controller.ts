@@ -1,7 +1,7 @@
-import { Controller, Post, Body, Param } from '@nestjs/common';
+import { Controller, Post, Body, Param, HttpStatus, HttpCode } from '@nestjs/common';
 import { IsNotEmpty } from 'class-validator';
 import { ProducerService } from '../services/producer.service';
-import { MessageCollection } from '../wire/message';
+import { Message, MessageCollection } from '../wire/message.wire';
 
 class PathParams {
   @IsNotEmpty()
@@ -10,13 +10,14 @@ class PathParams {
 
 @Controller(':topic')
 export class ProducerController {
-  constructor(private readonly producerService: ProducerService) {}
+  constructor(private readonly service: ProducerService) {}
 
   @Post('messages')
+  @HttpCode(HttpStatus.ACCEPTED)
   async produce(
-    @Param() params: PathParams,
-    @Body() messageCollection: MessageCollection,
+    @Param() { topic }: PathParams,
+    @Body() { messages }: MessageCollection,
   ) {
-    this.producerService.produce(params.topic, messageCollection.messages);
+    this.service.produce(topic, messages);
   }
 }

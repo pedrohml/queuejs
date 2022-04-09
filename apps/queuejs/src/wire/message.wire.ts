@@ -30,5 +30,3 @@ export class MessageCollection {
     return this.messages.length === 0;
   }
 }
-
-export default { Message, MessageCollection };

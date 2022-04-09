@@ -1,28 +1,34 @@
 import { Injectable } from '@nestjs/common';
 import db from '@prisma/client';
 import { PrismaService } from '../prisma.service';
-import { Message } from '../wire/message';
+import { Message } from '../wire/message.wire';
 
 @Injectable()
 export class ProducerService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  private async getLastMessage(topic: string): Promise<db.Message> {
-    return this.prismaService.message.findFirst({
-      where: { topic },
-      orderBy: { offset: 'desc' },
-    });
+  private async getTopicDB(topic: string): Promise<db.Topic> {
+    return this.prismaService.topic.findUnique({ where: { topic }});
   }
 
   async produce(topic: string, messages: Message[]): Promise<void> {
-    const lastMessage = await this.getLastMessage(topic);
-    const lastOffset = (lastMessage && lastMessage.offset) || 0;
+    // TODO: Miss protection against concurrent producers
+
+    const topicDB = await this.getTopicDB(topic);
+    const lastOffset = (topicDB && topicDB.last_offset) || 0;
     const nextOffset = lastOffset + 1;
     const messagesDB: db.Message[] = messages.map(({ data }, idx) => {
       return { id: undefined, topic, data, offset: nextOffset + idx };
     });
-    await this.prismaService.$transaction(
-      messagesDB.map((m) => this.prismaService.message.create({ data: m })),
-    );
+    const nextLastOffset = lastOffset + messagesDB.length;
+
+    const topicTransaction: db.PrismaPromise<db.Topic> = this.prismaService.topic.upsert({ where: { topic }, create: { topic, last_offset: nextLastOffset }, update: { last_offset: nextLastOffset }});
+    const messageTransactions: db.PrismaPromise<db.Message>[] = messagesDB.map((m) => this.prismaService.message.create({ data: m }));
+
+    let transactions = Array<db.PrismaPromise<any>>();
+    transactions.push(topicTransaction);
+    transactions.push(...messageTransactions);
+
+    await this.prismaService.$transaction(transactions);
   }
 }

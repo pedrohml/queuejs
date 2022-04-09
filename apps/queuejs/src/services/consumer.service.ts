@@ -51,11 +51,13 @@ export class ConsumerService {
     count = 1,
   ): Promise<db.Message[]> {
     const groupDB: db.Consumer = await this.getConsumer(group, topic);
+
     if (!groupDB)
       throw new HttpException(
         `There is no a consumer group '${group}' registered for the topic '${topic}'`,
         HttpStatus.BAD_REQUEST,
       );
+
     const offset = groupDB.offset;
     return this.prismaService.message.findMany({
       take: count,
