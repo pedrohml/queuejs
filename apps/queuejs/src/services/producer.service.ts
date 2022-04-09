@@ -11,7 +11,7 @@ export class ProducerService {
     return this.prismaService.topic.findUnique({ where: { topic }});
   }
 
-  async produce(topic: string, messages: Message[]): Promise<void> {
+  async produce(topic: string, messages: Message[]): Promise<any> {
     // TODO: Miss protection against concurrent producers
 
     const topicDB = await this.getTopicDB(topic);
@@ -29,6 +29,6 @@ export class ProducerService {
     transactions.push(topicTransaction);
     transactions.push(...messageTransactions);
 
-    await this.prismaService.$transaction(transactions);
+    return this.prismaService.$transaction(transactions);
   }
 }

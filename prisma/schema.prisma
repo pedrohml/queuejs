@@ -3,10 +3,11 @@
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["extendedIndexes"]
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -20,6 +21,8 @@ model Message {
   topic String
   data String
   offset Int
+
+  @@index([topic, offset(sort: Asc)])
 }
 
 model Consumer {
@@ -27,4 +30,6 @@ model Consumer {
   group String
   topic String
   offset Int
+
+  @@index([group, topic])
 }

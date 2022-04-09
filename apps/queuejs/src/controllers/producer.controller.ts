@@ -13,11 +13,10 @@ export class ProducerController {
   constructor(private readonly service: ProducerService) {}
 
   @Post('messages')
-  @HttpCode(HttpStatus.ACCEPTED)
   async produce(
     @Param() { topic }: PathParams,
     @Body() { messages }: MessageCollection,
   ) {
-    this.service.produce(topic, messages);
+    await this.service.produce(topic, messages);
   }
 }

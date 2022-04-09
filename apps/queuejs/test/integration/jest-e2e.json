@@ -2,7 +2,7 @@
   "moduleFileExtensions": ["js", "json", "ts"],
   "rootDir": "../../../..",
   "testEnvironment": "node",
-  "testRegex": ".e2e.spec.ts$",
+  "testRegex": ".e2e-spec.ts$",
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   },
@@ -11,5 +11,6 @@
     "<rootDir>/apps/queuejs/test/integration/"
   ],
   "modulePaths": ["<rootDir>"],
-  "setupFiles": ["./jest-setup-file.ts"]
+  "setupFiles": ["./jest-setup-file.ts"],
+  "maxWorkers": 1
 }
