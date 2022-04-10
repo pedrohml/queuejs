@@ -5,11 +5,11 @@ import { MessageCollection } from 'apps/queuejs/src/wire/message.wire';
 
 describe('producer (e2e)', () => {
   let app: INestApplication;
-  
+
   beforeAll(async () => {
     app = await IntegrationUtils.startApp();
   });
-  
+
   beforeEach(async () => {
     return IntegrationUtils.resetDB(await IntegrationUtils.getPrisma(app));
   });

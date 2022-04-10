@@ -4,7 +4,7 @@ import { MessageCollection } from "apps/queuejs/src/wire/message.wire";
 
 describe('producer + consumer (e2e)', () => {
     let app: INestApplication;
-  
+
     beforeAll(async () => {
         app = await IntegrationUtils.startApp();
     });
@@ -21,9 +21,9 @@ describe('producer + consumer (e2e)', () => {
         let topic = 'topic1';
         let group = 'group1';
         let data1 = '123';
-        
+
         await API.produce(app, topic, { messages: [ { data: data1 } ]} as MessageCollection);
-        
+
         await API.register(app, group, topic)
             .expect({ group, topic, offset: 0 });
 
@@ -122,7 +122,7 @@ describe('producer + consumer (e2e)', () => {
         let data4 = '321';
         let datas = [data1, data2, data3, data4];
 
-        for (let data of datas) 
+        for (let data of datas)
             await API.produce(app, topic, { messages: [ { data: data } ]} as MessageCollection);
 
         await API.register(app, group, topic)
@@ -153,7 +153,7 @@ describe('producer + consumer (e2e)', () => {
         let data4 = '321';
         let datas = [data1, data2, data3, data4];
 
-        for (let data of datas) 
+        for (let data of datas)
             await API.produce(app, topic, { messages: [ { data: data } ]} as MessageCollection);
 
         await API.register(app, group, topic)
@@ -182,7 +182,7 @@ describe('producer + consumer (e2e)', () => {
         await API.register(app, group, topic)
             .expect({ group, topic, offset: 0 });
     });
-    
+
     it('register none if already commited', async () => {
         let topic = 'topic1';
         let group = 'group1';

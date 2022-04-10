@@ -8,7 +8,7 @@ export class MessageAdapter {
       offset: internal.offset,
     } as wire.Message;
   }
-  
+
   static internalsToWire(internals: db.Message[]): wire.MessageCollection {
     const wires = internals.map(MessageAdapter.internalToWire);
     return new wire.MessageCollection(wires);

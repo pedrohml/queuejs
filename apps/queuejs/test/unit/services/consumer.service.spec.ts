@@ -43,7 +43,7 @@ describe('ConsumerService', () => {
       expect(prisma.consumer.findFirst).toBeCalledWith({ where: { group: 'group1', topic: 'topic1' }});
       expect(prisma.consumer.update).not.toBeCalled();
       expect(prisma.consumer.create).toBeCalledWith({ data: createAttrs });
-    });  
+    });
   });
 
   describe('commit', () => {

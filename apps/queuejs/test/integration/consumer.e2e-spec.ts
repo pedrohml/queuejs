@@ -4,11 +4,11 @@ import * as request from 'supertest';
 
 describe('consumer (e2e)', () => {
   let app: INestApplication;
-  
+
   beforeAll(async () => {
     app = await IntegrationUtils.startApp();
   });
-  
+
   beforeEach(async () => {
     return IntegrationUtils.resetDB(await IntegrationUtils.getPrisma(app));
   });

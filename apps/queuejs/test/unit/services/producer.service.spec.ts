@@ -48,16 +48,16 @@ describe('ProducerService', () => {
     it('when topic info already exists', async () => {
       let oldTopic = { topic: 'topic1', last_offset: 0 };
       let newTopic = Object.assign({ last_offset: 2 }, oldTopic);
-  
+
       await assertProduce(oldTopic, newTopic);
     });
-  
+
     it('when topic info does not exists', async () => {
       let newTopic: db.Topic = { topic: 'topic1', last_offset: 2 };
-  
+
       await assertProduce(null, newTopic);
     });
 
   })
-  
+
 });
