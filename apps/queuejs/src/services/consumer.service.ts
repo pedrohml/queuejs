@@ -42,21 +42,22 @@ export class ConsumerService {
     topic: string,
     offset: number,
   ): Promise<db.Consumer> {
-    return this.setOffset(group, topic, offset);
+    let consumer: db.Consumer = await this.getConsumer(group, topic);
+    if (consumer && consumer.offset >= offset)
+      return consumer
+    else
+      return this.setOffset(group, topic, offset);
   }
 
   async consume(
     group: string,
     topic: string,
     count = 1,
-  ): Promise<db.Message[]> {
+  ): Promise<db.Message[] | null> {
     const groupDB: db.Consumer = await this.getConsumer(group, topic);
 
     if (!groupDB)
-      throw new HttpException(
-        `There is no a consumer group '${group}' registered for the topic '${topic}'`,
-        HttpStatus.BAD_REQUEST,
-      );
+      return null;
 
     const offset = groupDB.offset;
     return this.prismaService.message.findMany({

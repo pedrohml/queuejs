@@ -38,7 +38,7 @@ describe('consumer (e2e)', () => {
         .expect(400)
         .expect({
           statusCode: 400,
-          message: "There is no a consumer group 'group1' registered for the topic 'topic1'"
+          message: "There is not a consumer group 'group1' registered for the topic 'topic1'"
         });
     });
   });

@@ -10,6 +10,8 @@ services:
       POSTGRES_USER: queuejs
       POSTGRES_PASSWORD: queuejs123
 
-  # app:
-  #   build: .
-  #   restart: always
+  app:
+    build: .
+    restart: always
+    ports:
+      - 3000:3000

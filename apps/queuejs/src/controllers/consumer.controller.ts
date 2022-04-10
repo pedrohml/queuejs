@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, HttpStatus, Param, Post, Put } from '@nestjs/common';
 import { Type } from 'class-transformer';
 import { IsAlphanumeric, IsNotEmpty, IsPositive } from 'class-validator';
 import { ConsumerService } from '../services/consumer.service';
@@ -6,6 +6,7 @@ import * as consumerWire from '../wire/consumer.wire';
 import * as messageWire from '../wire/message.wire';
 import { ConsumerAdapter } from '../adapters/consumer.adapter';
 import { MessageAdapter } from '../adapters/message.adapter';
+import db from '@prisma/client';
 
 class PathParams {
   @IsNotEmpty()
@@ -32,6 +33,13 @@ class CommitPayload {
 export class ConsumerController {
   constructor(private readonly service: ConsumerService) {}
 
+  private sendGroupNotRegisteredError(group: string, topic: string) {
+    throw new HttpException(
+      `There is not a consumer group '${group}' registered for the topic '${topic}'`,
+      HttpStatus.BAD_REQUEST,
+    );
+  }
+
   @Post('topics/:topic/register')
   async register(
     @Param() { group, topic }: PathParams,
@@ -48,6 +56,11 @@ export class ConsumerController {
   ): Promise<consumerWire.Consumer> {
     return this.service
       .commit(group, topic, offset)
+      .then((consumer: db.Consumer) => {
+        if (consumer.offset != offset)
+          throw new HttpException({ last_offset: consumer.offset, commit_offset: offset }, HttpStatus.CONFLICT)
+        else
+          return consumer})
       .then(ConsumerAdapter.internalToWire);
   }
 
@@ -57,6 +70,7 @@ export class ConsumerController {
   ): Promise<messageWire.MessageCollection> {
     return this.service
       .consume(group, topic, count)
+      .then((messages) => (messages !== null) ? messages : this.sendGroupNotRegisteredError(group, topic))
       .then(MessageAdapter.internalsToWire);
   }
 
@@ -66,6 +80,7 @@ export class ConsumerController {
   ): Promise<messageWire.MessageCollection> {
     return this.service
       .consume(group, topic)
+      .then((messages) => (messages !== null) ? messages : this.sendGroupNotRegisteredError(group, topic))
       .then(MessageAdapter.internalsToWire);
   }
 }
