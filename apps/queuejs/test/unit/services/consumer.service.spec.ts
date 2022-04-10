@@ -18,7 +18,12 @@ describe('ConsumerService', () => {
 
   describe('register', () => {
     it('when consumer group already exists', async () => {
-      const sampleConsumer: db.Consumer = { id: 1, group: 'group1', topic: 'topic1', offset: 5 };
+      const sampleConsumer: db.Consumer = {
+        id: 1,
+        group: 'group1',
+        topic: 'topic1',
+        offset: 5,
+      };
 
       prisma.consumer.findFirst = jest.fn().mockResolvedValue(sampleConsumer);
       prisma.consumer.update = jest.fn();
@@ -26,21 +31,28 @@ describe('ConsumerService', () => {
 
       expect(await service.register('group1', 'topic1')).toBe(sampleConsumer);
 
-      expect(prisma.consumer.findFirst).toBeCalledWith({ where: { group: 'group1', topic: 'topic1' }});
+      expect(prisma.consumer.findFirst).toBeCalledWith({
+        where: { group: 'group1', topic: 'topic1' },
+      });
       expect(prisma.consumer.create).not.toBeCalled();
       expect(prisma.consumer.update).not.toBeCalled();
     });
 
     it('when consumer group does not exists', async () => {
       const createAttrs = { group: 'group1', topic: 'topic1', offset: 0 };
-      const createdConsumer: db.Consumer = Object.assign({ id: 1 }, createAttrs);
+      const createdConsumer: db.Consumer = Object.assign(
+        { id: 1 },
+        createAttrs,
+      );
 
       prisma.consumer.findFirst = jest.fn().mockResolvedValue(null);
       prisma.consumer.update = jest.fn();
       prisma.consumer.create = jest.fn().mockResolvedValue(createdConsumer);
 
       expect(await service.register('group1', 'topic1')).toBe(createdConsumer);
-      expect(prisma.consumer.findFirst).toBeCalledWith({ where: { group: 'group1', topic: 'topic1' }});
+      expect(prisma.consumer.findFirst).toBeCalledWith({
+        where: { group: 'group1', topic: 'topic1' },
+      });
       expect(prisma.consumer.update).not.toBeCalled();
       expect(prisma.consumer.create).toBeCalledWith({ data: createAttrs });
     });
@@ -48,36 +60,60 @@ describe('ConsumerService', () => {
 
   describe('commit', () => {
     it('when consumer group exists', async () => {
-      const sampleConsumer: db.Consumer = { id: 2, group: 'group1', topic: 'topic1', offset: 4 };
+      const sampleConsumer: db.Consumer = {
+        id: 2,
+        group: 'group1',
+        topic: 'topic1',
+        offset: 4,
+      };
       const updateAttrs = { offset: 5 };
-      const updatedConsumer: db.Consumer = Object.assign({}, sampleConsumer, updateAttrs);
+      const updatedConsumer: db.Consumer = Object.assign(
+        {},
+        sampleConsumer,
+        updateAttrs,
+      );
 
       prisma.consumer.findFirst = jest.fn().mockResolvedValue(sampleConsumer);
       prisma.consumer.update = jest.fn().mockResolvedValue(updatedConsumer);
       prisma.consumer.create = jest.fn();
 
-      expect(await service.commit('group1', 'topic1', updateAttrs.offset)).toBe(updatedConsumer);
+      expect(await service.commit('group1', 'topic1', updateAttrs.offset)).toBe(
+        updatedConsumer,
+      );
 
       expect(prisma.consumer.create).not.toBeCalled();
-      expect(prisma.consumer.update).toBeCalledWith({ where: { id: 2 }, data: updateAttrs });
+      expect(prisma.consumer.update).toBeCalledWith({
+        where: { id: 2 },
+        data: updateAttrs,
+      });
     });
 
     it('when consumer group does not exists', async () => {
       const createAttrs = { group: 'group1', topic: 'topic1', offset: 4 };
-      const createdConsumer: db.Consumer = Object.assign({ id: 2 }, createAttrs);
+      const createdConsumer: db.Consumer = Object.assign(
+        { id: 2 },
+        createAttrs,
+      );
 
       prisma.consumer.findFirst = jest.fn().mockResolvedValue(null);
-      prisma.consumer.update = jest.fn()
+      prisma.consumer.update = jest.fn();
       prisma.consumer.create = jest.fn().mockResolvedValue(createdConsumer);
 
-      expect(await service.commit('group1', 'topic1', createdConsumer.offset)).toBe(createdConsumer);
+      expect(
+        await service.commit('group1', 'topic1', createdConsumer.offset),
+      ).toBe(createdConsumer);
 
       expect(prisma.consumer.update).not.toBeCalled();
       expect(prisma.consumer.create).toBeCalledWith({ data: createAttrs });
     });
 
     it('when tries to rollback commit respond with existing consumer', async () => {
-      const existingConsumer: db.Consumer = { id: 2, group: 'group1', topic: 'topic1', offset: 4 };
+      const existingConsumer: db.Consumer = {
+        id: 2,
+        group: 'group1',
+        topic: 'topic1',
+        offset: 4,
+      };
       const updateAttrs = { offset: 5 };
       const updatedConsumer = Object.assign({}, updateAttrs, existingConsumer);
 
@@ -86,8 +122,12 @@ describe('ConsumerService', () => {
       prisma.consumer.create = jest.fn();
 
       // not commiting with offset less than or equal 4
-      expect(await service.commit('group1', 'topic1', 4)).toStrictEqual(existingConsumer);
-      expect(await service.commit('group1', 'topic1', 3)).toStrictEqual(existingConsumer);
+      expect(await service.commit('group1', 'topic1', 4)).toStrictEqual(
+        existingConsumer,
+      );
+      expect(await service.commit('group1', 'topic1', 3)).toStrictEqual(
+        existingConsumer,
+      );
 
       expect(prisma.consumer.update).not.toBeCalled();
       expect(prisma.consumer.create).not.toBeCalled();
@@ -96,7 +136,9 @@ describe('ConsumerService', () => {
       prisma.consumer.update = jest.fn().mockResolvedValue(updatedConsumer);
 
       // commiting with offset greater than 4
-      expect(await service.commit('group1', 'topic1', 5)).toStrictEqual(updatedConsumer);
+      expect(await service.commit('group1', 'topic1', 5)).toStrictEqual(
+        updatedConsumer,
+      );
 
       expect(prisma.consumer.update).toBeCalledTimes(1);
     });
@@ -104,13 +146,33 @@ describe('ConsumerService', () => {
 
   describe('consume', () => {
     it('succeed when consumer group exists', async () => {
-      const consumerDB: db.Consumer = { id: 2, group: 'group1', topic: 'topic1', offset: 3 };
-      const messageDB1: db.Message = { id: 5, data: '123', topic: 'topic1', offset: 12 };
-      const messageDB2: db.Message = { id: 6, data: '456', topic: 'topic1', offset: 13 };
+      const consumerDB: db.Consumer = {
+        id: 2,
+        group: 'group1',
+        topic: 'topic1',
+        offset: 3,
+      };
+      const messageDB1: db.Message = {
+        id: 5,
+        data: '123',
+        topic: 'topic1',
+        offset: 12,
+      };
+      const messageDB2: db.Message = {
+        id: 6,
+        data: '456',
+        topic: 'topic1',
+        offset: 13,
+      };
       prisma.consumer.findFirst = jest.fn().mockResolvedValue(consumerDB);
-      prisma.message.findMany = jest.fn().mockResolvedValue([messageDB1, messageDB2]);
+      prisma.message.findMany = jest
+        .fn()
+        .mockResolvedValue([messageDB1, messageDB2]);
 
-      expect(await service.consume('group1', 'topic1', 3)).toStrictEqual([messageDB1, messageDB2]);
+      expect(await service.consume('group1', 'topic1', 3)).toStrictEqual([
+        messageDB1,
+        messageDB2,
+      ]);
     });
 
     it('fail when consumer group does not exist', async () => {

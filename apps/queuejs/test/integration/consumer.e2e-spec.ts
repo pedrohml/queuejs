@@ -19,15 +19,21 @@ describe('consumer (e2e)', () => {
 
   describe('/api/groups/:group/topics/:topic/register (POST)', () => {
     it('succeeds to register', async () => {
-      await API.register(app, 'group1', 'topic1')
-        .expect({ group: 'group1', topic: 'topic1', offset: 0 });
+      await API.register(app, 'group1', 'topic1').expect({
+        group: 'group1',
+        topic: 'topic1',
+        offset: 0,
+      });
     });
   });
 
   describe('/api/groups/:group/topics/:topic/commit (PUT)', () => {
     it('succeeds to commit', async () => {
-      await API.commit(app, 'group1', 'topic1', 10)
-        .expect({ group: 'group1', topic: 'topic1', offset: 10 });
+      await API.commit(app, 'group1', 'topic1', 10).expect({
+        group: 'group1',
+        topic: 'topic1',
+        offset: 10,
+      });
     });
   });
 
@@ -38,7 +44,8 @@ describe('consumer (e2e)', () => {
         .expect(400)
         .expect({
           statusCode: 400,
-          message: "There is not a consumer group 'group1' registered for the topic 'topic1'"
+          message:
+            "There is not a consumer group 'group1' registered for the topic 'topic1'",
         });
     });
   });

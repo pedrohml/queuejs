@@ -1,5 +1,5 @@
 import db from '@prisma/client';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 
 @Injectable()
@@ -42,11 +42,9 @@ export class ConsumerService {
     topic: string,
     offset: number,
   ): Promise<db.Consumer> {
-    let consumer: db.Consumer = await this.getConsumer(group, topic);
-    if (consumer && consumer.offset >= offset)
-      return consumer
-    else
-      return this.setOffset(group, topic, offset);
+    const consumer: db.Consumer = await this.getConsumer(group, topic);
+    if (consumer && consumer.offset >= offset) return consumer;
+    else return this.setOffset(group, topic, offset);
   }
 
   async consume(
@@ -56,8 +54,7 @@ export class ConsumerService {
   ): Promise<db.Message[] | null> {
     const groupDB: db.Consumer = await this.getConsumer(group, topic);
 
-    if (!groupDB)
-      return null;
+    if (!groupDB) return null;
 
     const offset = groupDB.offset;
     return this.prismaService.message.findMany({

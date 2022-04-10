@@ -16,48 +16,68 @@ describe('ProducerService', () => {
     prisma = module.get<PrismaService>(PrismaService);
   });
 
-  async function assertProduce(oldTopicDB: db.Topic | void, newTopicDB: db.Topic) {
-    let updatedTopic = Object.assign({}, newTopicDB, oldTopicDB);
+  async function assertProduce(
+    oldTopicDB: db.Topic | void,
+    newTopicDB: db.Topic,
+  ) {
+    const updatedTopic = Object.assign({}, newTopicDB, oldTopicDB);
 
-    let message1 = { data: '123' };
-    let message2 = { data: '456' };
+    const message1 = { data: '123' };
+    const message2 = { data: '456' };
 
-    let createAttrs1 = Object.assign({topic: 'topic1', offset: 1}, message1);
-    let createAttrs2 = Object.assign({topic: 'topic1', offset: 2}, message2);
+    const createAttrs1 = Object.assign(
+      { topic: 'topic1', offset: 1 },
+      message1,
+    );
+    const createAttrs2 = Object.assign(
+      { topic: 'topic1', offset: 2 },
+      message2,
+    );
 
-    let createdMessage1 = Object.assign({ id: 1 }, message1, createAttrs1);
-    let createdMessage2 = Object.assign({ id: 2 }, message2, createAttrs2);
+    const createdMessage1 = Object.assign({ id: 1 }, message1, createAttrs1);
+    const createdMessage2 = Object.assign({ id: 2 }, message2, createAttrs2);
 
     prisma.topic.findUnique = jest.fn().mockResolvedValue(oldTopicDB);
     prisma.topic.upsert = jest.fn().mockReturnValue(updatedTopic);
-    prisma.message.create = jest.fn().mockReturnValueOnce(createdMessage1).mockReturnValueOnce(createdMessage2);
+    prisma.message.create = jest
+      .fn()
+      .mockReturnValueOnce(createdMessage1)
+      .mockReturnValueOnce(createdMessage2);
     prisma.$transaction = jest.fn();
 
     await service.produce('topic1', [message1, message2]);
 
-    expect(prisma.topic.findUnique).toBeCalledWith({ where: { topic: 'topic1' }});
-    expect(prisma.topic.upsert).toBeCalledWith({ where: { topic: 'topic1' }, create: { topic: 'topic1', last_offset: 2 }, update: { last_offset: 2 }});
+    expect(prisma.topic.findUnique).toBeCalledWith({
+      where: { topic: 'topic1' },
+    });
+    expect(prisma.topic.upsert).toBeCalledWith({
+      where: { topic: 'topic1' },
+      create: { topic: 'topic1', last_offset: 2 },
+      update: { last_offset: 2 },
+    });
     expect(prisma.message.create).toBeCalledTimes(2);
     expect(prisma.message.create).toBeCalledWith({ data: createAttrs1 });
     expect(prisma.message.create).toBeCalledWith({ data: createAttrs2 });
 
-    expect(prisma.$transaction).toBeCalledWith([updatedTopic, createdMessage1, createdMessage2]);
+    expect(prisma.$transaction).toBeCalledWith([
+      updatedTopic,
+      createdMessage1,
+      createdMessage2,
+    ]);
   }
 
   describe('produce', () => {
     it('when topic info already exists', async () => {
-      let oldTopic = { topic: 'topic1', last_offset: 0 };
-      let newTopic = Object.assign({ last_offset: 2 }, oldTopic);
+      const oldTopic = { topic: 'topic1', last_offset: 0 };
+      const newTopic = Object.assign({ last_offset: 2 }, oldTopic);
 
       await assertProduce(oldTopic, newTopic);
     });
 
     it('when topic info does not exists', async () => {
-      let newTopic: db.Topic = { topic: 'topic1', last_offset: 2 };
+      const newTopic: db.Topic = { topic: 'topic1', last_offset: 2 };
 
       await assertProduce(null, newTopic);
     });
-
-  })
-
+  });
 });

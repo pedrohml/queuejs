@@ -1,4 +1,13 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Param, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { Type } from 'class-transformer';
 import { IsAlphanumeric, IsNotEmpty, IsPositive } from 'class-validator';
 import { ConsumerService } from '../services/consumer.service';
@@ -18,7 +27,7 @@ class PathParams {
   topic: string;
 }
 
-class PathWithCountParams extends PathParams{
+class PathWithCountParams extends PathParams {
   @IsPositive()
   @Type(() => Number)
   count: number;
@@ -58,9 +67,12 @@ export class ConsumerController {
       .commit(group, topic, offset)
       .then((consumer: db.Consumer) => {
         if (consumer.offset != offset)
-          throw new HttpException({ last_offset: consumer.offset, commit_offset: offset }, HttpStatus.CONFLICT)
-        else
-          return consumer})
+          throw new HttpException(
+            { last_offset: consumer.offset, commit_offset: offset },
+            HttpStatus.CONFLICT,
+          );
+        else return consumer;
+      })
       .then(ConsumerAdapter.internalToWire);
   }
 
@@ -70,7 +82,11 @@ export class ConsumerController {
   ): Promise<messageWire.MessageCollection> {
     return this.service
       .consume(group, topic, count)
-      .then((messages) => (messages !== null) ? messages : this.sendGroupNotRegisteredError(group, topic))
+      .then((messages) =>
+        messages !== null
+          ? messages
+          : this.sendGroupNotRegisteredError(group, topic),
+      )
       .then(MessageAdapter.internalsToWire);
   }
 
@@ -80,7 +96,11 @@ export class ConsumerController {
   ): Promise<messageWire.MessageCollection> {
     return this.service
       .consume(group, topic)
-      .then((messages) => (messages !== null) ? messages : this.sendGroupNotRegisteredError(group, topic))
+      .then((messages) =>
+        messages !== null
+          ? messages
+          : this.sendGroupNotRegisteredError(group, topic),
+      )
       .then(MessageAdapter.internalsToWire);
   }
 }

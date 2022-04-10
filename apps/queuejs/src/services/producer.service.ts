@@ -8,7 +8,7 @@ export class ProducerService {
   constructor(private readonly prismaService: PrismaService) {}
 
   private async getTopicDB(topic: string): Promise<db.Topic> {
-    return this.prismaService.topic.findUnique({ where: { topic }});
+    return this.prismaService.topic.findUnique({ where: { topic } });
   }
 
   async produce(topic: string, messages: Message[]): Promise<any> {
@@ -22,10 +22,17 @@ export class ProducerService {
     });
     const nextLastOffset = lastOffset + messagesDB.length;
 
-    const topicTransaction: db.PrismaPromise<db.Topic> = this.prismaService.topic.upsert({ where: { topic }, create: { topic, last_offset: nextLastOffset }, update: { last_offset: nextLastOffset }});
-    const messageTransactions: db.PrismaPromise<db.Message>[] = messagesDB.map((m) => this.prismaService.message.create({ data: m }));
+    const topicTransaction: db.PrismaPromise<db.Topic> =
+      this.prismaService.topic.upsert({
+        where: { topic },
+        create: { topic, last_offset: nextLastOffset },
+        update: { last_offset: nextLastOffset },
+      });
+    const messageTransactions: db.PrismaPromise<db.Message>[] = messagesDB.map(
+      (m) => this.prismaService.message.create({ data: m }),
+    );
 
-    let transactions = Array<db.PrismaPromise<any>>();
+    const transactions = Array<db.PrismaPromise<any>>();
     transactions.push(topicTransaction);
     transactions.push(...messageTransactions);
 
