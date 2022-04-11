@@ -20,7 +20,7 @@ The API was designed to interact with **producer** and **consumer** http clients
 
 ### Producer endpoint
 
-> `(POST) /api/topics/:topic/messages`
+> **(POST) /api/topics/:topic/messages**
 
 Produce messages to the topic `:topic`
 
@@ -34,7 +34,7 @@ Payload:
 - Body response: Empty
 ### Consumer entrypoints
 
-> `(POST) /api/groups/:group/topics/:topic/register`
+> **(POST) /api/groups/:group/topics/:topic/register**
 
 Register consumer `:group` to the `:topic`
 - No payload
@@ -48,7 +48,7 @@ Register consumer `:group` to the `:topic`
 }
 ```
 
-> `(PUT) /api/groups/:group/topics/:topic/commit`
+> **(PUT) /api/groups/:group/topics/:topic/commit**
 
 Commit consumer `:group` progress to the `:topic`
 
@@ -69,7 +69,7 @@ Payload:
 }
 ```
 
-> `(GET) /api/groups/:group/topics/:topic/next`
+> **(GET) /api/groups/:group/topics/:topic/next**
 
 Consume the next message from `:topic` based on current `:group` offset
 - Success status code: 200
@@ -80,7 +80,7 @@ Consume the next message from `:topic` based on current `:group` offset
 }
 ```
 
-> `(GET) /api/groups/:group/topics/:topic/messages/:count`
+> **(GET) /api/groups/:group/topics/:topic/messages/:count**
 
 Consume `:count` messages from `:topic` based on current `:group` offset
 - Success status code: 200
