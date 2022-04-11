@@ -35,9 +35,10 @@ class AtMostOnceStrategy extends Strategy {
     async consume(handlerFn) {
         const messages = await this.consumeMessages();
 
-        if (messages.length) {
-            await this.commitOffset(messages);
-            handlerFn(messages);
+        if (messages.length > 0) {
+            let commitReponse = await this.commitOffset(messages);
+            if (commitReponse.statusCode === 200)
+                handlerFn(messages);
         }
     }
 }
@@ -50,7 +51,7 @@ class AtLeastOnceStrategy extends Strategy {
     async consume(handlerFn) {
         const messages = await this.consumeMessages();
 
-        if (messages.length) {
+        if (messages.length > 0) {
             handlerFn(messages);
             await this.commitOffset(messages);
         }
