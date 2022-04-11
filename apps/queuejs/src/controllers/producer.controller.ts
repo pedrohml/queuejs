@@ -1,9 +1,11 @@
 import { Controller, Post, Body, Param } from '@nestjs/common';
+import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty } from 'class-validator';
 import { ProducerService } from '../services/producer.service';
 import { MessageCollection } from '../wire/message.wire';
 
 class PathParams {
+  @ApiProperty()
   @IsNotEmpty()
   topic: string;
 }

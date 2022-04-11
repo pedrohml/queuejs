@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   ArrayNotEmpty,
@@ -7,6 +8,7 @@ import {
 } from 'class-validator';
 
 export class Message {
+  @ApiProperty()
   @IsString()
   data: string;
 
@@ -20,6 +22,7 @@ export class MessageCollection {
   @ArrayNotEmpty()
   @ValidateNested({ each: true })
   @Type(() => Message)
+  @ApiProperty({ type: [Message] })
   messages: Message[];
 
   constructor(messages: Message[] = null) {

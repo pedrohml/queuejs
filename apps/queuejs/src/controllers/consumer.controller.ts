@@ -16,24 +16,29 @@ import * as messageWire from '../wire/message.wire';
 import { ConsumerAdapter } from '../adapters/consumer.adapter';
 import { MessageAdapter } from '../adapters/message.adapter';
 import db from '@prisma/client';
+import { ApiProperty } from '@nestjs/swagger';
 
 class PathParams {
+  @ApiProperty()
   @IsNotEmpty()
   @IsAlphanumeric()
   group: string;
 
+  @ApiProperty()
   @IsNotEmpty()
   @IsAlphanumeric()
   topic: string;
 }
 
 class PathWithCountParams extends PathParams {
+  @ApiProperty()
   @IsPositive()
   @Type(() => Number)
   count: number;
 }
 
 class CommitPayload {
+  @ApiProperty()
   @Type(() => Number)
   offset: number;
 }

@@ -16,6 +16,8 @@ export class ProducerService {
   }
 
   async produce(topic: string, messages: Message[]) {
+    // Ensuring we don't have concurrency on the same topic
+
     await this.asyncLock.acquire(topic, async () => {
       const topicDB = await this.getTopicDB(topic);
       const lastOffset = (topicDB && topicDB.last_offset) || 0;

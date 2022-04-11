@@ -47,10 +47,9 @@ export class ConsumerService {
     return this.asyncLock.acquire(`${group}:${topic}`, async () => {
       const consumer: db.Consumer = await this.getConsumer(group, topic);
 
-      if (consumer && consumer.offset >= offset)
-        return consumer;
-      else
-        return this.setOffset(group, topic, offset);
+      return (consumer && consumer.offset >= offset) ?
+        consumer :
+        this.setOffset(group, topic, offset);
     });
   }
 
@@ -59,6 +58,8 @@ export class ConsumerService {
     topic: string,
     count = 1,
   ): Promise<db.Message[] | null> {
+    // Ensuring we don't have concurrency on the same group and topic
+
     return this.asyncLock.acquire(`${group}:${topic}`, async () => {
       const groupDB: db.Consumer = await this.getConsumer(group, topic);
 
