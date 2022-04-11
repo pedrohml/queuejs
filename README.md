@@ -76,7 +76,7 @@ Currently, the consumer implements *at-most-once* approach to handle messages.
 
 Example:
   1. Make sure **queuejs** is running at `localhost:3000`;
-  2. Produce 3 messages (or [messages.txt](./messages.txt?raw=true)): `echo -e 'message1\nmessage2\nmessage3' | node tools/producer.js -t topic1`
+  2. Produce 3 messages (or [messages.txt](./tools/messages.txt?raw=true)): `echo -e 'message1\nmessage2\nmessage3' | node tools/producer.js -t topic1`
   ```
 message1 OK
 message2 OK
