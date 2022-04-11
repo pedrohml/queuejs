@@ -31,10 +31,11 @@ function green(str) {
   return `\x1b[32m${str}\x1b[0m`;
 }
 
-lineReader.on('line', (line) => {
-  superagent.post(producer_uri)
-    .send({ messages: [ { data: line } ] })
-    .end((err, response) => {
-      console.log(line, (!err ? green('OK'): red('ERROR')));
-    })
-});
+const start = async () =>{
+  for await (const line of lineReader) {
+    const response = await superagent.post(producer_uri)
+      .send({ messages: [ { data: line } ] });
+    console.log(line, (response.statusCode === 201 ? green('OK'): red('ERROR')));
+  }
+}
+start()

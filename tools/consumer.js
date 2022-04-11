@@ -1,5 +1,4 @@
 const { program } = require('commander');
-const { consumers } = require('stream');
 const superagent = require('superagent');
 const { AtMostOnceStrategy } = require('./strategy');
 
@@ -10,8 +9,8 @@ program
   .option('-h, --host <host>', 'The host for queuejs', 'localhost')
   .option('-p, --port <port>', 'The port for queuejs', '3000')
   .option('-g, --group <group>', 'The consumer group to be used')
-  .option('-w, --watch', 'Keep listening for new messages', false)
-  .requiredOption('-t, --topic <topic>', 'topic to produce messages');
+  .requiredOption('-t, --topic <topic>', 'The topic to produce messages')
+  .option('-w, --watch', 'Keep listening for new messages', false);
 
 program.parse();
 
@@ -49,7 +48,7 @@ function handler(messages) {
   console.assert((await register()).statusCode === 201, "The consumer couldn't be registered")
   
   if (options.watch) {
-    setInterval(() => { strategy.consume(handler); }, 500);
+    setInterval(() => { strategy.consume(handler) }, 500);
   } else {
     strategy.consume(handler);
   }
