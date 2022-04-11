@@ -123,10 +123,11 @@ Options:
 
 ## Limitations
 
-This API is not supposed to have multiple instances for a single database.
+This API is not supposed to have multiple instances by database.
 So scaling horizontally is not an option now.
+
 ## Backlog
 
 1. Add support to reset consumer group offset;
 2. Migrate atomic operations (i.e. produce, commit and consume) to PostgreSQL procedures;
-3. Add partition support.
+3. Add partition key support.
