@@ -46,15 +46,16 @@ describe('ConsumerService', () => {
       );
 
       prisma.consumer.findFirst = jest.fn().mockResolvedValue(null);
-      prisma.consumer.update = jest.fn();
-      prisma.consumer.create = jest.fn().mockResolvedValue(createdConsumer);
+      prisma.consumer.upsert = jest.fn().mockResolvedValue(createdConsumer);
 
-      expect(await service.register('group1', 'topic1')).toBe(createdConsumer);
+      expect(await service.register('group1', 'topic1')).toStrictEqual(createdConsumer);
       expect(prisma.consumer.findFirst).toBeCalledWith({
         where: { group: 'group1', topic: 'topic1' },
       });
-      expect(prisma.consumer.update).not.toBeCalled();
-      expect(prisma.consumer.create).toBeCalledWith({ data: createAttrs });
+      expect(prisma.consumer.upsert).toBeCalledWith({
+        where: { group_topic: { group: 'group1', topic: 'topic1' } },
+        create: createAttrs,
+        update: { offset: 0 } });
     });
   });
 
@@ -74,18 +75,12 @@ describe('ConsumerService', () => {
       );
 
       prisma.consumer.findFirst = jest.fn().mockResolvedValue(sampleConsumer);
-      prisma.consumer.update = jest.fn().mockResolvedValue(updatedConsumer);
-      prisma.consumer.create = jest.fn();
+      prisma.consumer.upsert = jest.fn().mockResolvedValue(updatedConsumer);
 
-      expect(await service.commit('group1', 'topic1', updateAttrs.offset)).toBe(
-        updatedConsumer,
-      );
+      expect(await service.commit('group1', 'topic1', updateAttrs.offset))
+        .toStrictEqual(updatedConsumer);
 
-      expect(prisma.consumer.create).not.toBeCalled();
-      expect(prisma.consumer.update).toBeCalledWith({
-        where: { id: 2 },
-        data: updateAttrs,
-      });
+      expect(prisma.consumer.upsert).toBeCalledTimes(1);
     });
 
     it('when consumer group does not exists', async () => {
@@ -96,15 +91,13 @@ describe('ConsumerService', () => {
       );
 
       prisma.consumer.findFirst = jest.fn().mockResolvedValue(null);
-      prisma.consumer.update = jest.fn();
-      prisma.consumer.create = jest.fn().mockResolvedValue(createdConsumer);
+      prisma.consumer.upsert = jest.fn().mockResolvedValue(createdConsumer);
 
       expect(
         await service.commit('group1', 'topic1', createdConsumer.offset),
       ).toBe(createdConsumer);
 
-      expect(prisma.consumer.update).not.toBeCalled();
-      expect(prisma.consumer.create).toBeCalledWith({ data: createAttrs });
+      expect(prisma.consumer.upsert).toBeCalledTimes(1);
     });
 
     it('when tries to rollback commit respond with existing consumer', async () => {
@@ -118,8 +111,7 @@ describe('ConsumerService', () => {
       const updatedConsumer = Object.assign({}, updateAttrs, existingConsumer);
 
       prisma.consumer.findFirst = jest.fn().mockResolvedValue(existingConsumer);
-      prisma.consumer.update = jest.fn();
-      prisma.consumer.create = jest.fn();
+      prisma.consumer.upsert = jest.fn();
 
       // not commiting with offset less than or equal 4
       expect(await service.commit('group1', 'topic1', 4)).toStrictEqual(
@@ -129,18 +121,17 @@ describe('ConsumerService', () => {
         existingConsumer,
       );
 
-      expect(prisma.consumer.update).not.toBeCalled();
-      expect(prisma.consumer.create).not.toBeCalled();
+      expect(prisma.consumer.upsert).not.toBeCalled();
       expect(prisma.consumer.findFirst).toBeCalledTimes(2);
 
-      prisma.consumer.update = jest.fn().mockResolvedValue(updatedConsumer);
+      prisma.consumer.upsert = jest.fn().mockResolvedValue(updatedConsumer);
 
       // commiting with offset greater than 4
       expect(await service.commit('group1', 'topic1', 5)).toStrictEqual(
         updatedConsumer,
       );
 
-      expect(prisma.consumer.update).toBeCalledTimes(1);
+      expect(prisma.consumer.upsert).toBeCalledTimes(1);
     });
   });
 

@@ -84,6 +84,7 @@ describe('producer + consumer (e2e)', () => {
     await API.produce(app, topic, {
       messages: [{ data: data1 }],
     } as MessageCollection);
+
     await API.produce(app, topic, {
       messages: [{ data: data2 }],
     } as MessageCollection);
@@ -116,6 +117,7 @@ describe('producer + consumer (e2e)', () => {
     await API.produce(app, topic, {
       messages: [{ data: data1 }],
     } as MessageCollection);
+
     await API.produce(app, topic, {
       messages: [{ data: data2 }],
     } as MessageCollection);
@@ -208,5 +210,74 @@ describe('producer + consumer (e2e)', () => {
     await API.commit(app, group, topic, 5);
 
     await API.register(app, group, topic).expect({ group, topic, offset: 5 });
+  });
+
+  it('produce 1, consume [1, 2], commit 1 (past), consume [2, 3]', async () => {
+    const topic = 'topic1';
+    const group = 'group1';
+    const data1 = '123';
+    const data2 = '456';
+    const data3 = '789';
+    const data4 = '321';
+    const datas = [data1, data2, data3, data4];
+
+    for (const data of datas)
+      await API.produce(app, topic, {
+        messages: [{ data: data }],
+      } as MessageCollection);
+
+    await API.register(app, group, topic).expect({ group, topic, offset: 0 });
+
+    await API.consume(app, group, topic, 2).expect({
+      messages: [
+        { data: data1, topic, offset: 1 },
+        { data: data2, topic, offset: 2 },
+      ],
+    });
+
+    await API.commit(app, group, topic, 1) // past offset
+      .expect({ group, topic, offset: 1 });
+
+    await API.consume(app, group, topic, 2).expect({
+      messages: [
+          { data: data2, topic, offset: 2 },
+          { data: data3, topic, offset: 3 }],
+    });
+  });
+
+  it('produce 1, consume [1, 2], commit 2, commit 1 (ignored), consume [3, 4]', async () => {
+    const topic = 'topic1';
+    const group = 'group1';
+    const data1 = '123';
+    const data2 = '456';
+    const data3 = '789';
+    const data4 = '321';
+    const datas = [data1, data2, data3, data4];
+
+    for (const data of datas)
+      await API.produce(app, topic, {
+        messages: [{ data: data }],
+      } as MessageCollection);
+
+    await API.register(app, group, topic).expect(201, { group, topic, offset: 0 });
+
+    await API.consume(app, group, topic, 2).expect(200, {
+      messages: [
+        { data: data1, topic, offset: 1 },
+        { data: data2, topic, offset: 2 },
+      ],
+    });
+
+    await API.commit(app, group, topic, 2)
+      .expect(200, { group, topic, offset: 2 });
+
+    await API.commit(app, group, topic, 1) // ignored commit (less than last one)
+      .expect(409, { group, topic, offset: 2 });
+
+    await API.consume(app, group, topic, 2).expect(200, {
+      messages: [
+          { data: data3, topic, offset: 3 },
+          { data: data4, topic, offset: 4 }],
+    });
   });
 });

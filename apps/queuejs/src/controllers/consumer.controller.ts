@@ -6,7 +6,7 @@ import {
   HttpStatus,
   Param,
   Post,
-  Put,
+  Put
 } from '@nestjs/common';
 import { Type } from 'class-transformer';
 import { IsAlphanumeric, IsNotEmpty, IsPositive } from 'class-validator';
@@ -63,17 +63,14 @@ export class ConsumerController {
     @Param() { group, topic }: PathParams,
     @Body() { offset }: CommitPayload,
   ): Promise<consumerWire.Consumer> {
-    return this.service
-      .commit(group, topic, offset)
-      .then((consumer: db.Consumer) => {
-        if (consumer.offset != offset)
-          throw new HttpException(
-            { last_offset: consumer.offset, commit_offset: offset },
-            HttpStatus.CONFLICT,
-          );
-        else return consumer;
-      })
-      .then(ConsumerAdapter.internalToWire);
+    const consumer: db.Consumer = await this.service.commit(group, topic, offset);
+    const isConflict: boolean = consumer.offset != offset;
+    const wire = ConsumerAdapter.internalToWire(consumer);
+
+    if (!isConflict)
+      return wire;
+    else
+      throw new HttpException(wire, HttpStatus.CONFLICT);
   }
 
   @Get('topics/:topic/messages/:count')

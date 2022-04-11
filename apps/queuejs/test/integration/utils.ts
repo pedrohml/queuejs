@@ -63,8 +63,7 @@ export class API {
   ): request.Test {
     return request(app.getHttpServer())
       .put(`/api/groups/${group}/topics/${topic}/commit`)
-      .send({ offset })
-      .expect(200);
+      .send({ offset });
   }
 
   static consume(

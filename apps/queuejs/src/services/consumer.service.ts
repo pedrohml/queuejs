@@ -1,10 +1,15 @@
 import db from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
+import * as AsyncLock from "async-lock";
 
 @Injectable()
 export class ConsumerService {
-  constructor(private readonly prismaService: PrismaService) {}
+  asyncLock: AsyncLock;
+
+  constructor(private readonly prismaService: PrismaService) {
+    this.asyncLock = new AsyncLock();
+  }
 
   private async getConsumer(
     group: string,
@@ -18,16 +23,11 @@ export class ConsumerService {
     topic: string,
     offset: number,
   ): Promise<db.Consumer> {
-    const existingGroupDB = await this.getConsumer(group, topic);
-    if (existingGroupDB)
-      return this.prismaService.consumer.update({
-        where: { id: existingGroupDB.id },
-        data: { offset },
-      });
-    else
-      return this.prismaService.consumer.create({
-        data: { group, topic, offset },
-      });
+    return this.prismaService.consumer.upsert({
+      where: { group_topic: { group, topic } },
+      create: { group, topic, offset },
+      update: { offset }
+    });
   }
 
   async register(group: string, topic: string): Promise<db.Consumer> {
@@ -42,9 +42,16 @@ export class ConsumerService {
     topic: string,
     offset: number,
   ): Promise<db.Consumer> {
-    const consumer: db.Consumer = await this.getConsumer(group, topic);
-    if (consumer && consumer.offset >= offset) return consumer;
-    else return this.setOffset(group, topic, offset);
+    // Ensuring we don't have concurrency on the same group and topic
+
+    return this.asyncLock.acquire(`${group}:${topic}`, async () => {
+      const consumer: db.Consumer = await this.getConsumer(group, topic);
+
+      if (consumer && consumer.offset >= offset)
+        return consumer;
+      else
+        return this.setOffset(group, topic, offset);
+    });
   }
 
   async consume(
@@ -52,15 +59,20 @@ export class ConsumerService {
     topic: string,
     count = 1,
   ): Promise<db.Message[] | null> {
-    const groupDB: db.Consumer = await this.getConsumer(group, topic);
+    return this.asyncLock.acquire(`${group}:${topic}`, async () => {
+      const groupDB: db.Consumer = await this.getConsumer(group, topic);
 
-    if (!groupDB) return null;
+      if (groupDB) {
+        const offset = groupDB.offset;
 
-    const offset = groupDB.offset;
-    return this.prismaService.message.findMany({
-      take: count,
-      where: { offset: { gt: offset } },
-      orderBy: { offset: 'asc' },
+        return this.prismaService.message.findMany({
+          take: count,
+          where: { offset: { gt: offset } },
+          orderBy: { offset: 'asc' },
+        });
+      } else {
+        return null;
+      }
     });
   }
 }
