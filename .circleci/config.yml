@@ -27,10 +27,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            # Find a cache corresponding to this specific package-lock.json checksum
-            # when this file is changed, this key will fail
             - v1-npm-deps-{{ checksum "package-lock.json" }}
-            # Find the most recently generated cache used from any branch
             - v1-npm-deps-
       - run:
           name: Run tests
@@ -43,10 +40,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            # Find a cache corresponding to this specific package-lock.json checksum
-            # when this file is changed, this key will fail
             - v1-npm-deps-{{ checksum "package-lock.json" }}
-            # Find the most recently generated cache used from any branch
             - v1-npm-deps-
       - run:
           name: Run tests
@@ -56,4 +50,9 @@ workflows:
   run-all-tests:
     jobs:
       - prepare
-      - run-unit-tests
+      - run-unit-tests:
+          requires:
+              - prepare
+      - run-e2e-tests:
+          requires:
+              - prepare
