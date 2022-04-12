@@ -21,7 +21,7 @@ let lineReader = createInterface({
 
 const api = new API(host, port);
 
-const start = async () =>{
+const start = async () => {
   for await (const line of lineReader) {
     await api.produce(topic, line);
   }

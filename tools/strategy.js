@@ -8,7 +8,6 @@ class Strategy {
 
     async consumeMessages() {
         const consumeResponse = await this.api.consume(this.group, this.topic);
-        console.assert(consumeResponse.statusCode === 200, "Couldn't consume messages with success");
         const docResponse = JSON.parse(consumeResponse.text);
         return docResponse.messages;
     }
