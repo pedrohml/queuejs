@@ -3,14 +3,15 @@ FROM node:17-alpine3.14
 WORKDIR /dist/queuejs
 
 COPY package.json .
-COPY .env .
 
 COPY dist/apps/queuejs/main.js .
 COPY prisma/schema.prisma prisma/
 
 RUN npm install
 
-RUN npx prisma db push
-RUN npx prisma generate
+RUN npm run pgenerate:prod
 
-CMD [ "node", "main.js" ]
+RUN echo -e "#!/bin/sh\nnpm run pushdb:prod && node main.js" > start
+RUN chmod a+x start
+
+CMD [ "/bin/sh", "-c", "./start" ]

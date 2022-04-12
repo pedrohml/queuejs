@@ -32,7 +32,7 @@ const strategy = new AtMostOnceStrategy(api, topic, group, handler);
   console.assert((await api.register(group, topic)).statusCode === 201, "The consumer couldn't be registered")
 
   if (options.watch)
-    setInterval(() => { strategy.consume() }, 250); // watching
+    setInterval(() => { strategy.consume() }, 100); // watching
   else
     strategy.consume();
 })();

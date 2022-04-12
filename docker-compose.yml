@@ -1,0 +1,19 @@
+version: '3.1'
+
+services:
+  db:
+    image: postgres:14.2
+    restart: always
+    environment:
+      POSTGRES_USER: queuejs
+      POSTGRES_PASSWORD: queuejs123
+
+  queuejs:
+    build: .
+    restart: always
+    ports:
+      - 3000:3000
+    environment:
+      DATABASE_URL: postgresql://queuejs:queuejs123@db:5432/queuejs?schema=public
+    depends_on:
+      - db

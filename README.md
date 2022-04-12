@@ -17,14 +17,14 @@ To see the endpoints documentation go [here](./docs/endpoints.md)
 - [NestJS](https://nestjs.com) for API abstraction;
 - [Prisma](https://www.prisma.io) for database abstration;
 - [async-lock](https://www.npmjs.com/package/async-lock) for concurrency management;
-- [SQLite](https://www.sqlite.org/index.html) for database engine;
+- [PostgreSQL](https://www.postgresql.org) for database engine on production environment;
+- [SQLite](https://www.sqlite.org/index.html) for database engine on development/test environments;
 - [Swagger](https://swagger.io) for API documentation;
 
-## Running with docker (if you are hurry)
+## Running with docker (if you are hurry !)
 
 ```bash
-$ docker build -t queuejs .
-$ docker run -it --rm --name queuejs -p 3000:3000 queuejs
+$ docker-compose up --build
 ```
 
 To see API endpoints go to https://localhost:3000/api (Swagger UI)
@@ -39,14 +39,16 @@ Before running the code locally, we need to prepare the enviroment.
 # install dependencies
 $ npm install
 
-# create the database structure
+# create the database structure (sqlite)
 $ npm run pushdb:dev
 
 # generate database abstractions
-$ npx prisma generate
+$ npm run pgenerate:dev
 ```
 
 ### Running
+
+Make sure you have [prepared the environment](#Prepare).
 
 ```bash
 # development
@@ -59,6 +61,8 @@ $ npm run start:dev
 To see API endpoints go to https://localhost:3000/api (Swagger UI)
 
 ### Testing
+
+Make sure you have [prepared the environment](#Prepare).
 
 ```bash
 # unit tests
