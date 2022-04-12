@@ -1,11 +1,13 @@
 class Strategy {
-    constructor(consumeReqFn, commitReqFn) {
-        this.consumeReqFn = consumeReqFn;
-        this.commitReqFn = commitReqFn;
+    constructor(api, topic, group, handlerFn) {
+        this.api = api;
+        this.topic = topic;
+        this.group = group;
+        this.handlerFn = handlerFn;
     }
 
     async consumeMessages() {
-        const consumeResponse = await this.consumeReqFn();
+        const consumeResponse = await this.api.consume(this.group, this.topic);
         console.assert(consumeResponse.statusCode === 200, "Couldn't consume messages with success");
         const docResponse = JSON.parse(consumeResponse.text);
         return docResponse.messages;
@@ -17,42 +19,40 @@ class Strategy {
         for (let message of messages)
             maxOffset = Math.max(message.offset, maxOffset);
 
-        const commitResponse = await this.commitReqFn(maxOffset);
-        console.assert([200, 409].indexOf(commitResponse.statusCode) >= 0, "Couldn't commit with success");
-        return commitResponse
+        return await this.api.commit(this.group, this.topic, maxOffset);
     }
 
-    async consume(handlerFn) {
+    async consume() {
         throw new ReferenceError('Strategy class cannot be instantiated.');
     }
 }
 
 class AtMostOnceStrategy extends Strategy {
-    constructor(consumeReqFn, commitFn) {
-        super(consumeReqFn, commitFn);
+    constructor(...args) {
+        super(...args);
     }
 
-    async consume(handlerFn) {
+    async consume() {
         const messages = await this.consumeMessages();
 
         if (messages.length > 0) {
             let commitReponse = await this.commitOffset(messages);
             if (commitReponse.statusCode === 200)
-                handlerFn(messages);
+                this.handlerFn(messages);
         }
     }
 }
 
 class AtLeastOnceStrategy extends Strategy {
-    constructor(consumeReqFn, commitFn) {
-        super(consumeReqFn, commitFn);
+    constructor(...args) {
+        super(...args);
     }
 
-    async consume(handlerFn) {
+    async consume() {
         const messages = await this.consumeMessages();
 
         if (messages.length > 0) {
-            handlerFn(messages);
+            this.handlerFn(messages);
             await this.commitOffset(messages);
         }
     }

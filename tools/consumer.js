@@ -1,6 +1,6 @@
 const { program } = require('commander');
-const superagent = require('superagent');
-const { AtMostOnceStrategy } = require('./strategy');
+const { API } = require('./api');
+const { AtMostOnceStrategy, AtLeastOnceStrategy } = require('./strategy');
 
 
 program
@@ -18,39 +18,22 @@ const options = program.opts();
 const { host, port, topic } = options;
 const group = options.group || topic;
 
-const register_uri = `http://${host}:${port}/api/groups/${group}/topics/${topic}/register`;
-const commit_uri = `http://${host}:${port}/api/groups/${group}/topics/${topic}/commit`;
-const consume_uri = `http://${host}:${port}/api/groups/${group}/topics/${topic}/next`;
-
-async function register() {
-  return superagent.post(register_uri);
-}
-
-async function commit(offset) {
-  return superagent.put(commit_uri)
-    .ok((res) => [200, 409].indexOf(res.statusCode) >= 0)
-    .send({ offset: offset });
-}
-
-async function consume() {
-  return superagent.get(consume_uri);
-}
-
-const strategy = new AtMostOnceStrategy(consume, commit);
-// const strategy = new AtLeastOnceStrategy(consume, commit);
-
 function handler(messages) {
   // CUSTOM CODE HERE
   console.log(messages);
 }
 
+const api = new API(host, port);
+
+const strategy = new AtMostOnceStrategy(api, topic, group, handler);
+// const strategy = new AtLeastOnceStrategy(api, topic, group, handler);
+
 (async () => {
-  console.assert((await register()).statusCode === 201, "The consumer couldn't be registered")
-  
-  if (options.watch) {
-    setInterval(() => { strategy.consume(handler) }, 500);
-  } else {
-    strategy.consume(handler);
-  }
+  console.assert((await api.register(group, topic)).statusCode === 201, "The consumer couldn't be registered")
+
+  if (options.watch)
+    setInterval(() => { strategy.consume() }, 250); // watching
+  else
+    strategy.consume();
 })();
 
