@@ -4,6 +4,8 @@
 
 <p align="center">A simple broker API</p>
 
+[![CircleCI](https://circleci.com/gh/pedrohml/queuejs/tree/main.svg?style=svg&circle-token=6dbd5dbe3f8bdd1575b786f9b5e15970cffde9d6)](https://circleci.com/gh/pedrohml/queuejs/tree/main)
+
 ## Description
 
 The **queuejs** is a simple broker API for dummy purposes.
