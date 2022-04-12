@@ -5,6 +5,14 @@ version: 2.1
 orbs:
   node: circleci/node@4.7
 
+commands:
+  restore-npm-deps:
+    steps:
+      - restore_cache:
+          keys:
+            - v1-npm-deps-{{ checksum "package-lock.json" }}
+            - v1-npm-deps-
+
 jobs:
   prepare:
     docker:
@@ -25,10 +33,7 @@ jobs:
       - image: cimg/node:17.7.2
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - v1-npm-deps-{{ checksum "package-lock.json" }}
-            - v1-npm-deps-
+      - restore-npm-deps
       - run:
           name: Run tests
           command: npm run test
@@ -38,10 +43,7 @@ jobs:
       - image: cimg/node:17.7.2
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - v1-npm-deps-{{ checksum "package-lock.json" }}
-            - v1-npm-deps-
+      - restore-npm-deps
       - run:
           name: Run tests
           command: npm run test:e2e
