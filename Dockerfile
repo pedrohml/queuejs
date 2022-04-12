@@ -2,16 +2,15 @@ FROM node:17-alpine3.14
 
 WORKDIR /dist/queuejs
 
-COPY package.json .
-COPY tsconfig*.json .
-COPY prisma/schema.prisma prisma/
-COPY apps/ apps/
+ADD package.json .
+ADD tsconfig*.json .
+ADD nest-cli.json .
+ADD prisma/schema.prisma prisma/
+ADD apps/ apps/
 
-RUN npm install
-RUN npm run build
+RUN npm install && npm run build
 
-COPY dist/apps/queuejs/main.js .
-RUN rm -rf apps tsconfig*.json
+RUN cp dist/apps/queuejs/main.js . && rm -rf apps tsconfig*.json
 
 RUN npm run pgenerate:prod
 

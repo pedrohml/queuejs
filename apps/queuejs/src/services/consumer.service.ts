@@ -3,6 +3,8 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import * as AsyncLock from "async-lock";
 
+export type ConsumerUpdated = {consumer: db.Consumer} & { updated: boolean };
+
 @Injectable()
 export class ConsumerService {
   asyncLock: AsyncLock;
@@ -11,14 +13,14 @@ export class ConsumerService {
     this.asyncLock = new AsyncLock();
   }
 
-  private async getConsumer(
+  private getConsumer(
     group: string,
     topic: string,
   ): Promise<db.Consumer> {
     return this.prismaService.consumer.findFirst({ where: { group, topic } });
   }
 
-  private async setOffset(
+  private setOffset(
     group: string,
     topic: string,
     offset: number,
@@ -41,15 +43,15 @@ export class ConsumerService {
     group: string,
     topic: string,
     offset: number,
-  ): Promise<db.Consumer> {
+  ): Promise<ConsumerUpdated> {
     // Ensuring we don't have concurrency on the same group and topic
 
     return this.asyncLock.acquire(`${group}:${topic}`, async () => {
       const consumer: db.Consumer = await this.getConsumer(group, topic);
 
       return (consumer && consumer.offset >= offset) ?
-        consumer :
-        await this.setOffset(group, topic, offset);
+        {updated: false, consumer} :
+        {updated: true, consumer: await this.setOffset(group, topic, offset)};
     });
   }
 
@@ -66,7 +68,7 @@ export class ConsumerService {
       if (groupDB) {
         const offset = groupDB.offset;
 
-        return this.prismaService.message.findMany({
+        return await this.prismaService.message.findMany({
           take: count,
           where: { offset: { gt: offset } },
           orderBy: { offset: 'asc' },

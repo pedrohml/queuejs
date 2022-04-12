@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { Type } from 'class-transformer';
 import { IsAlphanumeric, IsNotEmpty, IsPositive } from 'class-validator';
-import { ConsumerService } from '../services/consumer.service';
+import { ConsumerService, ConsumerUpdated } from '../services/consumer.service';
 import * as consumerWire from '../wire/consumer.wire';
 import * as messageWire from '../wire/message.wire';
 import { ConsumerAdapter } from '../adapters/consumer.adapter';
@@ -68,11 +68,10 @@ export class ConsumerController {
     @Param() { group, topic }: PathParams,
     @Body() { offset }: CommitPayload,
   ): Promise<consumerWire.Consumer> {
-    const consumer: db.Consumer = await this.service.commit(group, topic, offset);
-    const isConflict: boolean = consumer.offset != offset;
+    const { updated, consumer }: ConsumerUpdated = await this.service.commit(group, topic, offset);
     const wire = ConsumerAdapter.internalToWire(consumer);
 
-    if (!isConflict)
+    if (updated)
       return wire;
     else
       throw new HttpException(wire, HttpStatus.CONFLICT);

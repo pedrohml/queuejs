@@ -78,7 +78,7 @@ describe('ConsumerService', () => {
       prisma.consumer.upsert = jest.fn().mockResolvedValue(updatedConsumer);
 
       expect(await service.commit('group1', 'topic1', updateAttrs.offset))
-        .toStrictEqual(updatedConsumer);
+        .toStrictEqual({updated: true, consumer: updatedConsumer});
 
       expect(prisma.consumer.upsert).toBeCalledTimes(1);
     });
@@ -95,7 +95,7 @@ describe('ConsumerService', () => {
 
       expect(
         await service.commit('group1', 'topic1', createdConsumer.offset),
-      ).toBe(createdConsumer);
+      ).toStrictEqual({updated: true, consumer: createdConsumer});
 
       expect(prisma.consumer.upsert).toBeCalledTimes(1);
     });
@@ -115,10 +115,10 @@ describe('ConsumerService', () => {
 
       // not commiting with offset less than or equal 4
       expect(await service.commit('group1', 'topic1', 4)).toStrictEqual(
-        existingConsumer,
+        {updated: false, consumer: existingConsumer},
       );
       expect(await service.commit('group1', 'topic1', 3)).toStrictEqual(
-        existingConsumer,
+        {updated: false, consumer: existingConsumer},
       );
 
       expect(prisma.consumer.upsert).not.toBeCalled();
@@ -128,7 +128,7 @@ describe('ConsumerService', () => {
 
       // commiting with offset greater than 4
       expect(await service.commit('group1', 'topic1', 5)).toStrictEqual(
-        updatedConsumer,
+        {updated: true, consumer: updatedConsumer},
       );
 
       expect(prisma.consumer.upsert).toBeCalledTimes(1);
