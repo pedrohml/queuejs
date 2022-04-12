@@ -137,6 +137,7 @@ So scaling horizontally is not an option now.
 
 ## Backlog
 
-1. Add support to reset consumer group offset;
-2. Migrate atomic operations (i.e. produce, commit and consume) to PostgreSQL procedures;
-3. Add partition key support.
+1. Improve the [API](./tools/api.js) client library and documentation;
+2. Add support to reset consumer group offset;
+3. Migrate atomic operations (i.e. produce, commit and consume) to PostgreSQL procedures;
+4. Add partition key support.
