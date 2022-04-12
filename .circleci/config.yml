@@ -1,0 +1,58 @@
+# Use the latest 2.1 version of CircleCI pipeline process engine.
+# See: https://circleci.com/docs/2.0/configuration-reference
+version: 2.1
+
+orbs:
+  node: circleci/node@4.7
+
+jobs:
+  prepare:
+    docker:
+      - image: cimg/node:17.7.2
+    steps:
+      - checkout
+      - node/install-packages:
+          pkg-manager: npm
+      - run: npm run pgenerate:test
+      - run: npm run pushdb:test
+      - save_cache:
+          paths:
+            - ~/project/node_modules
+            - ~/project/prisma/test.db
+          key: v1-npm-deps-{{ checksum "package-lock.json" }}
+  run-unit-tests:
+    docker:
+      - image: cimg/node:17.7.2
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-npm-deps-{{ checksum "package-lock.json" }}
+            - v1-npm-deps-
+      - run:
+          name: Run tests
+          command: npm run test
+
+  run-e2e-tests:
+    docker:
+      - image: cimg/node:17.7.2
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-npm-deps-{{ checksum "package-lock.json" }}
+            - v1-npm-deps-
+      - run:
+          name: Run tests
+          command: npm run test:e2e
+
+workflows:
+  run-all-tests:
+    jobs:
+      - prepare
+      - run-unit-tests:
+          requires:
+              - prepare
+      - run-e2e-tests:
+          requires:
+              - prepare
