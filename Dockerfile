@@ -4,6 +4,7 @@ WORKDIR /dist/queuejs
 
 COPY package.json .
 
+RUN npm run build
 COPY dist/apps/queuejs/main.js .
 COPY prisma/schema.prisma prisma/
 
