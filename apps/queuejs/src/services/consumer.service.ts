@@ -49,7 +49,7 @@ export class ConsumerService {
 
       return (consumer && consumer.offset >= offset) ?
         consumer :
-        this.setOffset(group, topic, offset);
+        await this.setOffset(group, topic, offset);
     });
   }
 

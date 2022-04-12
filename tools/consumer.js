@@ -32,8 +32,8 @@ const strategy = new AtMostOnceStrategy(api, topic, group, handler);
   await api.register(group, topic);
 
   if (options.watch)
-    setInterval(() => { strategy.consume() }, 100); // watching
+    setInterval(async () => { await strategy.consume() }, 100); // watching
   else
-    strategy.consume();
+    await strategy.consume();
 })();
 
