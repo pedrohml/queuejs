@@ -65,6 +65,9 @@ To see API endpoints go to https://localhost:3000/api (Swagger UI)
 Make sure you have [prepared the environment](#Prepare).
 
 ```bash
+# create the database structure for integration test (sqlite)
+$ npm run pushdb:test
+
 # unit tests
 $ npm run test
 
