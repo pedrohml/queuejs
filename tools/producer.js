@@ -19,14 +19,6 @@ let lineReader = createInterface({
   terminal: false
 });
 
-function red(str) {
-  return `\x1b[31m${str}\x1b[0m`;
-}
-
-function green(str) {
-  return `\x1b[32m${str}\x1b[0m`;
-}
-
 const api = new API(host, port);
 
 const start = async () =>{
