@@ -20,22 +20,22 @@ class API {
         return uri;
     }
 
-    async produce(topic, data) {
+    produce(topic, data) {
         return post(this.buildURI(API.PRODUCER_URI, { topic }))
             .send({ messages: [ { data } ] });
     }
 
-    async register(group, topic) {
+    register(group, topic) {
         return post(this.buildURI(API.REGISTER_URI, { group, topic }));
     }
 
-    async commit(group, topic, offset) {
+    commit(group, topic, offset) {
         return put(this.buildURI(API.COMMIT_URI, { group, topic }))
             .ok((res) => res.statusCode === 200 || res.statusCode === 409)
             .send({ offset });
     }
 
-    async consume(group, topic) {
+    consume(group, topic) {
         return get(this.buildURI(API.CONSUME_URI, { group, topic }));
     }
 }

@@ -21,9 +21,18 @@ let lineReader = createInterface({
 
 const api = new API(host, port);
 
+function red(str) {
+  return `\x1b[31m${str}\x1b[0m`;
+}
+
+function green(str) {
+  return `\x1b[32m${str}\x1b[0m`;
+}
+
 const start = async () => {
   for await (const line of lineReader) {
-    await api.produce(topic, line);
+    const response = await api.produce(topic, line).ok((_) => true);
+    console.log(line, (response.statusCode === 201 ? green('OK'): red('ERROR')));
   }
 }
 start()
