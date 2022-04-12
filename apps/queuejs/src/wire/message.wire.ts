@@ -28,8 +28,4 @@ export class MessageCollection {
   constructor(messages: Message[] = null) {
     this.messages = messages || [];
   }
-
-  isEmpty(): boolean {
-    return this.messages.length === 0;
-  }
 }

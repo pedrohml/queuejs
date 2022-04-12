@@ -23,6 +23,7 @@
     "test": "dotenv -e .env.test -- npx jest",
     "test:watch": "dotenv -e .env.test -- npx jest --watch",
     "test:cov": "dotenv -e .env.test -- npx jest --coverage",
+    "test:intcov": "dotenv -e .env.test -- npx jest --config=./apps/queuejs/test/integration/jest-e2e.json --coverage",
     "test:debug": "dotenv -e .env.test -- node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "dotenv -e .env.test -- npx jest --config=./apps/queuejs/test/integration/jest-e2e.json"
   },
