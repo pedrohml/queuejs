@@ -29,7 +29,7 @@ const strategy = new AtMostOnceStrategy(api, topic, group, handler);
 // const strategy = new AtLeastOnceStrategy(api, topic, group, handler);
 
 (async () => {
-  console.assert((await api.register(group, topic)).statusCode === 201, "The consumer couldn't be registered")
+  await api.register(group, topic);
 
   if (options.watch)
     setInterval(() => { strategy.consume() }, 100); // watching

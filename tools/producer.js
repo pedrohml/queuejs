@@ -31,8 +31,7 @@ const api = new API(host, port);
 
 const start = async () =>{
   for await (const line of lineReader) {
-    const response = await api.produce(topic, line);
-    console.log(line, (response.statusCode === 201 ? green('OK'): red('ERROR')));
+    await api.produce(topic, line);
   }
 }
 start()

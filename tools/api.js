@@ -32,7 +32,7 @@ class API {
     async commit(group, topic, offset) {
         return put(this.buildURI(API.COMMIT_URI, { group, topic }))
             .ok((res) => res.statusCode === 200 || res.statusCode === 409)
-            .send({ offset: offset });
+            .send({ offset });
     }
 
     async consume(group, topic) {
